@@ -13,7 +13,6 @@ def auth():
 @retry(tries=3, delay=300)
 def request_twitter_api(api, url, params):
     try:
-        print("Request Twitter APIs")
         res = api.get(url, params = params)
         if res.status_code == 200:
             print("Success.")
@@ -40,6 +39,7 @@ def find_all_followers(api, user):
             'cursor'      : cursor,
             'skip_status' : 'true'
             }
+        print("Get {}'s followers.".format(user))
         res = request_twitter_api(api, url, params)
         text = json.loads(res.text)
         for follower in text['users']:
@@ -61,6 +61,7 @@ def find_all_friends(api, user):
             'cursor'      : cursor,
             'skip_status' : 'true'
             }
+        print("Get {}'s frineds.".format(user))
         res = request_twitter_api(api, url, params)
         text = json.loads(res.text)
         for friend in text['users']:
@@ -70,43 +71,65 @@ def find_all_friends(api, user):
         if cursor == 0:
             return friends_dict
 
-def merge_ff(followers_list, friends_list):
-    merge_list = [user]
-    merge_list = merge_list + followers_list
-    for friend in friends_list:
-        if friend in followers_list:
+def merge_ff(merge_list, followers_dict, friends_dict, user):
+    for follower in followers_dict[user]:
+        if follower in merge_list:
+            continue
+        else:
+            merge_list.append(follower)
+    for friend in friends_dict[user]:
+        if friend in merge_list:
             continue
         else:
             merge_list.append(friend)
     return merge_list
 
+def friend_arc(f, merge_list, arc_dict, node):
+    n1 = merge_list.index(node) + 1
+    for u in arc_dict[node]:
+        n2 = merge_list.index(u) + 1
+        f.write('{} {}\n'.format(n1, n2))
+
+def follower_arc(f, merge_list, arc_dict, node):
+    n1 = merge_list.index(node) + 1
+    for u in arc_dict[node]:
+        n2 = merge_list.index(u) + 1
+        f.write('{} {}\n'.format(n2, n1))
+
 def create_friendship(followers_dict, friends_dict, user):
     with open("friendships.net", mode='w') as f:
         # Add Vertice record.
-        merge_list = merge_ff(followers_dict[user], friends_dict[user])
-        f.write('*Vertices {}\n1 "{}"\n'.format(len(merge_list), user))
-        vertice = 2
-
+        merge_list = [user]
+        merge_list = merge_ff(merge_list, followers_dict, friends_dict, user)
+        for friend in friends_dict[user]:
+            merge_list = merge_ff(merge_list, followers_dict, friends_dict, friend)
         for follower in followers_dict[user]:
-            f.write('{} "{}"\n'.format(vertice, follower))
+            merge_list = merge_ff(merge_list, followers_dict, friends_dict, friend)
+        f.write('*Vertices {}\n'.format(len(merge_list)))
+        vertice = 1
+
+        for u in merge_list:
+            f.write('{} "{}"\n'.format(vertice, u))
             vertice += 1
 
-        for friend in friends_dict[user]:
-            # Add only those who do not duplicate.
-            if friend in followers_dict[user]:
-                continue
-            else:
-                f.write('{} "{}"\n'.format(vertice, friend))
-                vertice += 1
-        
         # Add Arcs record.
         f.write("*Arcs\n")
-        for follower in followers_dict[user]:
-            arc = merge_list.index(follower) + 1
-            f.write('{} 1\n'.format(arc))
+        friend_arc(f, merge_list, friends_dict, user)
+        follower_arc(f, merge_list, followers_dict, user)
         for friend in friends_dict[user]:
-            arc = merge_list.index(friend) + 1
-            f.write('1 {}\n'.format(arc))
+            friend_arc(f, merge_list, friends_dict, friend)
+        for follower in followers_dict[user]:
+            follower_arc(f, merge_list, followers_dict, friend)
+
+
+            for friend in friends_dict[user]:
+                n1 = merge_list.index(user) + 1
+                n2 = merge_list.index(friend) + 1
+                f.write('{} {}\n'.format(n1, n2))
+            for u in followers_dict[user]:
+                n1 = merge_list.index(u) + 1
+                n2 = merge_list.index(user) + 1
+                f.write('{} {}\n'.format(n1, n2))
     print("friendships.net created")
 
 if __name__ == "__main__":
@@ -130,4 +153,8 @@ if __name__ == "__main__":
 
     followers_dict.update(find_all_followers(api, user))
     friends_dict.update(find_all_friends(api, user))
+    for friend in friends_dict[user]:
+        followers_dict.update(find_all_followers(api, friend))
+        friends_dict.update(find_all_friends(api, friend))
+
     create_friendship(followers_dict, friends_dict, user)
