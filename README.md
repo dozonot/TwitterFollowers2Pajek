@@ -19,7 +19,7 @@ pip3 install requests_oauthlib
 ## Usage
 
 ```
-$ ./getFollowers.py --help
+$ ./getFriendship.py --help
 usage: getFollowers.py [-h] -u USER
 
 Get followers and friends, and generate friendships.net file.
@@ -33,8 +33,8 @@ optional arguments:
 ## Install
 
 ```
-git clone https://github.com/dozonot/TwitterFollowers2Pajek.git
-cd TwitterFollowers2Pajek
+git clone https://github.com/dozonot/.TwitterFriendship2Pajek.git
+cd TwitterFriendship2Pajek
 cat << EOF | tee ./config.py
 CONSUMER_KEY = "xxx"        # Replace your API keys
 CONSUMER_SECRET = "xxx"     # Replace your API keys
