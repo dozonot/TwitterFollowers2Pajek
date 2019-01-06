@@ -33,7 +33,7 @@ optional arguments:
 ## Install
 
 ```
-git clone https://github.com/dozonot/.TwitterFriendship2Pajek.git
+git clone https://github.com/dozonot/TwitterFriendship2Pajek.git
 cd TwitterFriendship2Pajek
 cat << EOF | tee ./config.py
 CONSUMER_KEY = "xxx"        # Replace your API keys
