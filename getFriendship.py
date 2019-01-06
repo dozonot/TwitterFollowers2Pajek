@@ -116,20 +116,10 @@ def create_friendship(followers_dict, friends_dict, user):
         f.write("*Arcs\n")
         friend_arc(f, merge_list, friends_dict, user)
         follower_arc(f, merge_list, followers_dict, user)
-        for friend in friends_dict[user]:
-            friend_arc(f, merge_list, friends_dict, friend)
-        for follower in followers_dict[user]:
-            follower_arc(f, merge_list, followers_dict, friend)
-
-
-            for friend in friends_dict[user]:
-                n1 = merge_list.index(user) + 1
-                n2 = merge_list.index(friend) + 1
-                f.write('{} {}\n'.format(n1, n2))
-            for u in followers_dict[user]:
-                n1 = merge_list.index(u) + 1
-                n2 = merge_list.index(user) + 1
-                f.write('{} {}\n'.format(n1, n2))
+        for node in friends_dict[user]:
+            friend_arc(f, merge_list, friends_dict, node)
+        for node in followers_dict[user]:
+            follower_arc(f, merge_list, followers_dict, node)
     print("friendships.net created")
 
 if __name__ == "__main__":
