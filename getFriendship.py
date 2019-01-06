@@ -10,7 +10,7 @@ def auth():
     ATS = config.ACCESS_TOKEN_SECRET
     return OAuth1Session(CK, CS, AT, ATS)
 
-@retry(tries=3, delay=300)
+@retry(tries=3, delay=900)
 def request_twitter_api(api, url, params):
     try:
         res = api.get(url, params = params)
@@ -20,12 +20,13 @@ def request_twitter_api(api, url, params):
         elif res.status_code == 429:
             print("Error: {}, Too many requests".format(res.status_code))
             print("This script sleeps for 300 seconds and then retries.")
-            raise TooManyRequests('Too many requests Twitter APIs')
+            raise 
         else:
             print("Error: {}".format(res.status_code))
             sys.exit()
-    except TooManyRequests as e:
+    except:
         print(type(e))
+        raise
 
 def find_all_followers(api, user):
     url    = "https://api.twitter.com/1.1/followers/list.json"
