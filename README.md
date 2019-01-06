@@ -7,13 +7,13 @@ Get followers and friends, and generate friendships.net file.
 ## Prerequiests
 
 ```
-pip install requests_oauthlib
+pip install requests_oauthlib retry
 ```
 
 or
 
 ```
-pip3 install requests_oauthlib
+pip3 install requests_oauthlib retry
 ```
 
 ## Usage
@@ -41,7 +41,6 @@ CONSUMER_SECRET = "xxx"     # Replace your API keys
 ACCESS_TOKEN = "xxx"        # Replace your API keys
 ACCESS_TOKEN_SECRET = "xxx" # Replace your API keys
 EOF
-pip install requests_oauthlib
 ```
 
 ## Tested environment

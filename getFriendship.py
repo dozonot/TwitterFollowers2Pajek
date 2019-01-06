@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys, json, config, argparse
+from retry import retry
 from requests_oauthlib import OAuth1Session
 
 def auth():
@@ -9,54 +10,63 @@ def auth():
     ATS = config.ACCESS_TOKEN_SECRET
     return OAuth1Session(CK, CS, AT, ATS)
 
-def find_followers(api, user):
+@retry(tries=3, delay=300)
+def request_twitter_api(api, url, params):
+    try:
+        print("Request Twitter APIs")
+        res = api.get(url, params = params)
+        if res.status_code == 200:
+            print("Success.")
+            return res
+        elif res.status_code == 429:
+            print("Error: {}, Too many requests".format(res.status_code))
+            print("This script sleeps for 300 seconds and then retries.")
+            raise TooManyRequests('Too many requests Twitter APIs')
+        else:
+            print("Error: {}".format(res.status_code))
+            sys.exit()
+    except TooManyRequests as e:
+        print(type(e))
+
+def find_all_followers(api, user):
     url    = "https://api.twitter.com/1.1/followers/list.json"
-    count  = 200
     cursor = -1
     followers_dict = {}
     followers_dict[user] = []
     while True:
         params = {
             'screen_name' : user,
-            'count'       : count,
+            'count'       : 200,
             'cursor'      : cursor,
             'skip_status' : 'true'
             }
-        req = api.get(url, params = params)
-        if req.status_code == 200:
-            res = json.loads(req.text)
-            for follower in res['users']:
-                followers_dict[user].append(follower['screen_name'])
-        else:
-            print("Error: %d" % req.status_code)
-            sys.exit()
+        res = request_twitter_api(api, url, params)
+        text = json.loads(res.text)
+        for follower in text['users']:
+            followers_dict[user].append(follower['screen_name'])
         
-        cursor = res['next_cursor']
+        cursor = text['next_cursor']
         if cursor == 0:
             return followers_dict
 
-def find_friends(api, user):
+def find_all_friends(api, user):
     url    = "https://api.twitter.com/1.1/friends/list.json"
-    count  = 200
     cursor = -1
     friends_dict = {}
     friends_dict[user] = []
     while True:
         params = {
             'screen_name' : user,
-            'count'       : count,
+            'count'       : 200,
             'cursor'      : cursor,
             'skip_status' : 'true'
             }
-        req = api.get(url, params = params)
-        if req.status_code == 200:
-            res = json.loads(req.text)
-            for friend in res['users']:
-                friends_dict[user].append(friend['screen_name'])
-        else:
-            print("Error: %d" % req.status_code)
+        res = request_twitter_api(api, url, params)
+        text = json.loads(res.text)
+        for friend in text['users']:
+            friends_dict[user].append(friend['screen_name'])
         
-        cursor = res['next_cursor']
+        cursor = text['next_cursor']
         if cursor == 0:
             return friends_dict
 
@@ -118,6 +128,6 @@ if __name__ == "__main__":
     followers_dict = {}
     friends_dict   = {}
 
-    followers_dict.update(find_followers(api, user))
-    friends_dict.update(find_friends(api, user))
+    followers_dict.update(find_all_followers(api, user))
+    friends_dict.update(find_all_friends(api, user))
     create_friendship(followers_dict, friends_dict, user)
