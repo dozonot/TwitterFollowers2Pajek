@@ -45,7 +45,6 @@ def find_all_followers(api, user):
         text = json.loads(res.text)
         for follower in text['users']:
             followers_dict[user].append(follower['screen_name'])
-        
         cursor = text['next_cursor']
         if cursor == 0:
             return followers_dict
@@ -67,22 +66,21 @@ def find_all_friends(api, user):
         text = json.loads(res.text)
         for friend in text['users']:
             friends_dict[user].append(friend['screen_name'])
-        
         cursor = text['next_cursor']
         if cursor == 0:
             return friends_dict
 
-def merge_ff(merge_list, followers_dict, friends_dict, user):
-    for follower in followers_dict[user]:
-        if follower in merge_list:
-            continue
-        else:
-            merge_list.append(follower)
-    for friend in friends_dict[user]:
+def merge_ff(merge_list, followers_dict, friends_dict, node):
+    for friend in friends_dict[node]:
         if friend in merge_list:
             continue
         else:
             merge_list.append(friend)
+    for follower in followers_dict[node]:
+        if follower in merge_list:
+            continue
+        else:
+            merge_list.append(follower)
     return merge_list
 
 def friend_arc(f, merge_list, arc_dict, node):
@@ -102,24 +100,19 @@ def create_friendship(followers_dict, friends_dict, user):
         # Add Vertice record.
         merge_list = [user]
         merge_list = merge_ff(merge_list, followers_dict, friends_dict, user)
-        for friend in friends_dict[user]:
-            merge_list = merge_ff(merge_list, followers_dict, friends_dict, friend)
-        for follower in followers_dict[user]:
-            merge_list = merge_ff(merge_list, followers_dict, friends_dict, friend)
+        for node in friends_dict[user]:
+            merge_list = merge_ff(merge_list, followers_dict, friends_dict, node)
         f.write('*Vertices {}\n'.format(len(merge_list)))
         vertice = 1
-
         for u in merge_list:
             f.write('{} "{}"\n'.format(vertice, u))
             vertice += 1
-
         # Add Arcs record.
         f.write("*Arcs\n")
         friend_arc(f, merge_list, friends_dict, user)
         follower_arc(f, merge_list, followers_dict, user)
         for node in friends_dict[user]:
             friend_arc(f, merge_list, friends_dict, node)
-        for node in followers_dict[user]:
             follower_arc(f, merge_list, followers_dict, node)
     print("friendships.net created")
 
