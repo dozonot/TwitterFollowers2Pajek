@@ -2,7 +2,17 @@
 
 Get followers and friends, and generate friendships.net file.
 
-![sample_image](https://user-images.githubusercontent.com/31640715/50738602-19551700-1219-11e9-90c9-f21097cec315.png)
+```
+$ ./getFriendship-single.py -u dozonot
+```
+
+![single_image](https://user-images.githubusercontent.com/31640715/50738602-19551700-1219-11e9-90c9-f21097cec315.png)
+
+```
+$ ./getFriendship.py -u dozonot
+```
+
+![graph-image](https://user-images.githubusercontent.com/31640715/50765029-fded1900-12b7-11e9-979f-1d0fefd2c2ac.png)
 
 ## Prerequiests
 
