@@ -2,11 +2,20 @@
 
 Get followers and friends, and generate friendships.net file.
 
+## Description
+
+### Single user data
+Acquire the specified user's friendship.
+
 ```
 $ ./getFriendship-single.py -u dozonot
 ```
 
 ![single_image](https://user-images.githubusercontent.com/31640715/50738602-19551700-1219-11e9-90c9-f21097cec315.png)
+
+### With friends.
+
+Acquire the specified user's friendship and the friend of the specified user (exclude follower).
 
 ```
 $ ./getFriendship.py -u dozonot
