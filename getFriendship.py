@@ -19,7 +19,7 @@ def request_twitter_api(api, url, params):
             return res
         elif res.status_code == 429:
             print("Error: {}, Too many requests".format(res.status_code))
-            print("This script sleeps for 300 seconds and then retries.")
+            print("This script sleeps for 900 seconds and then retries.")
             raise 
         else:
             print("Error: {}".format(res.status_code))
